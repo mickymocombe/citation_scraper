@@ -751,7 +751,7 @@ class SearchScholarQuery(ScholarQuery):
         + '&as_oq=%(words_some)s' \
         + '&as_eq=%(words_none)s' \
         + '&as_occt=%(scope)s' \
-        + '&start=%(start)s' \
+        + '&cstart=%(start)s' \
         + '&as_sauthors=%(authors)s' \
         + '&as_publication=%(pub)s' \
         + '&as_ylo=%(ylo)s' \
