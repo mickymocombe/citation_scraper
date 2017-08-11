@@ -2,7 +2,7 @@ import sys
 import re
 
 from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citation_export, ScholarConf
-from typing import List
+from typing import List, Dict
 
 """
 @article{jacobs2014evolutionary,
@@ -16,6 +16,8 @@ from typing import List
   publisher={NIH Public Access}
 }
 """
+
+Citations = Dict[str, Dict]
 
 
 def bibtex_to_dict_key(bibtex: str):
@@ -44,7 +46,7 @@ def bibtex_to_dict_key(bibtex: str):
     return bib_id, match_dict
 
 
-def make_dict_from_bibtex(querier: ScholarQuerier):
+def make_dict_from_bibtex(querier: ScholarQuerier) -> Citations:
     """
     turns all articles from query into a dictionary
     :param querier: the querier object
@@ -101,8 +103,30 @@ def get_citations_authors(authors: List[str]):
     return output_dict
 
 
+def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
+    """
+    expects the citations to be articles only. Not prepared to handle other things
+    :return: an html formatted string with all of the citations from input
+    """
+    output = []
+    for citation in cit_dict.values():
+        cit_html = ('{author}; <strong>{title}</strong>. <i>{journal}</i>. <strong>{volume}-{number}'
+                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n'.format(**citation))
+        output.append(cit_html)
+    return output
+
+
 def main():
-    d = get_citations('benedict paten')
+    """
+    expects first argument to be path to text file containing author names
+    and second argument to be path to output file location
+    """
+    authors_file = sys.argv[1]
+    with open(authors_file, 'r') as fh:
+        authors = fh.readlines()
+    output_file = sys.argv[2] if sys.argv[2] else 'citations.txt'
+    with open(output_file, 'w') as fh:
+        fh.writelines(dict_to_txt_lines(get_citations_authors(authors)))
 
 
 if __name__ == '__main__':
