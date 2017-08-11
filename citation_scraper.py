@@ -26,14 +26,14 @@ def bibtex_to_dict_key(bibtex: str):
     rex = ('@.+?\{(?P<id>.+?),\n'
            '(?:.*title=\{(?P<title>.+?)\},?\n)?'
            '(?:.*author=\{(?P<author>.+?)\},?\n)?'
-           '(?:.*[journal|book]=\{(?P<journal>.+?)\},?\n)?'
+           '(?:.*journal=\{(?P<journal>.+?)\},?\n)?'
+           # for inproceedings entries:
+           '(?:.*booktitle=\{(?P<booktitle>.+?)\},?\n)?'
            '(?:.*volume=\{(?P<volume>.+?)\},?\n)?'
            '(?:.*number=\{(?P<number>.+?)\},?\n)?'
            '(?:.*pages=\{(?P<pages>.+?)\},?\n)?'
            '(?:.*year=\{(?P<year>.+?)\},?\n)?'
            '(?:.*publisher=\{(?P<publisher>.+?)\},?\n)?'
-           # for inproceedings entries:
-           '(?:.*booktitle=\{(?P<booktitle>.+?)\},?\n)?'
            '\}')
     match = re.search(rex, bibtex)
     if match is None:
