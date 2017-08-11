@@ -37,9 +37,7 @@ def bibtex_to_dict_key(bibtex: str):
            '\}')
     match = re.search(rex, bibtex)
     if match is None:
-        # TODO: uhh... sometimes we don't match some things that are @inproceedings with booktitle, etc
-        # or just throw error and skip
-        pass
+        raise ValueError
     match_dict = match.groupdict()
     bib_id = match_dict.pop('id')
     return bib_id, match_dict
@@ -54,7 +52,10 @@ def make_dict_from_bibtex(querier: ScholarQuerier):
 
     out_dict = {}
     for article in querier.articles:
-        bib_id, bib_dict = bibtex_to_dict_key(article.as_citation().decode('utf-8'))
+        try:
+            bib_id, bib_dict = bibtex_to_dict_key(article.as_citation().decode('utf-8'))
+        except ValueError:
+            continue
         out_dict[bib_id] = bib_dict
     return out_dict
 
