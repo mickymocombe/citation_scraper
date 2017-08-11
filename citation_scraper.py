@@ -17,38 +17,40 @@ from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citatio
 """
 
 
+def bibtex_to_dict_key(bibtex: str):
+    """
+    parses a bibtex entry and translates into a python dictionary
+    :param bibtex: the bibtex string
+    :return: tuple with bibtex entry id and dict of other fields
+    """
+    rex = ('@.+?\{(?P<id>.+?),\n'
+           '(?:.*title=\{(?P<title>.+?)\},?\n)?'
+           '(?:.*author=\{(?P<author>.+?)\},?\n)?'
+           '(?:.*[journal|book]=\{(?P<journal>.+?)\},?\n)?'
+           '(?:.*volume=\{(?P<volume>.+?)\},?\n)?'
+           '(?:.*number=\{(?P<number>.+?)\},?\n)?'
+           '(?:.*pages=\{(?P<pages>.+?)\},?\n)?'
+           '(?:.*year=\{(?P<year>.+?)\},?\n)?'
+           '(?:.*publisher=\{(?P<publisher>.+?)\},?\n)?'
+           # for inproceedings entries:
+           '(?:.*booktitle=\{(?P<booktitle>.+?)\},?\n)?'
+           '\}')
+    match = re.search(rex, bibtex)
+    if match is None:
+        # TODO: uhh... sometimes we don't match some things that are @inproceedings with booktitle, etc
+        # or just throw error and skip
+        pass
+    match_dict = match.groupdict()
+    bib_id = match_dict.pop('id')
+    return bib_id, match_dict
+
+
 def make_dict_from_bibtex(querier: ScholarQuerier):
     """
     turns all articles from query into a dictionary
     :param querier: the querier object
     :return: dict where keys are article ids, and val is dict of title, author, etc
     """
-    def bibtex_to_dict_key(bibtex: str):
-        """
-        parses a bibtex entry and translates into a python dictionary
-        :param bibtex: the bibtex string
-        :return: tuple with bibtex entry id and dict of other fields
-        """
-        rex = ('@.+?\{(?P<id>.+?),\n'
-               '(?=.*title=\{(?P<title>.+?)\},?\n)?'
-               '(?=.*author=\{(?P<author>.+?)\},?\n)?'
-               '(?=.*[journal|book]=\{(?P<journal>.+?)\},?\n)?'
-               '(?=.*volume=\{(?P<volume>.+?)\},?\n)?'
-               '(?=.*number=\{(?P<number>.+?)\},?\n)?'
-               '(?=.*pages=\{(?P<pages>.+?)\},?\n)?'
-               '(?=.*year=\{(?P<year>.+?)\},?\n)?'
-               '(?=.*publisher=\{(?P<publisher>.+?)\},?\n)?'
-               # for inproceedings entries:
-               '(?=.*booktitle=\{(?P<booktitle>.+?)\},?\n)?'
-               '\}')
-        match = re.search(rex, bibtex)
-        if match is None:
-            # TODO: uhh... sometimes we don't match some things that are @inproceedings with booktitle, etc
-            # or just throw error and skip
-            pass
-        match_dict = match.groupdict()
-        bib_id = match_dict.pop('id')
-        return bib_id, match_dict
 
     out_dict = {}
     for article in querier.articles:
