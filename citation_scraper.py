@@ -2,6 +2,7 @@ import sys
 import re
 
 from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citation_export, ScholarConf
+from typing import List
 
 """
 @article{jacobs2014evolutionary,
@@ -90,6 +91,15 @@ def get_citations(author: str):
         output_dict.update(page_dict)
         num_results += ScholarConf.MAX_PAGE_RESULTS
     return output_dict
+
+
+def get_citations_authors(authors: List[str]):
+    output_dict = {}
+    for author in authors:
+        output_dict.update(get_citations(author))
+        # TODO: possibly wait here so as not to get blocked by API
+    return output_dict
+
 
 def main():
     d = get_citations('benedict paten')
