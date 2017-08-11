@@ -76,20 +76,19 @@ def get_citations(author: str):
 
     output_dict = {}
     num_results = 0
-    # while True:
-    query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
-    # query.set_start(num_results)
+    while True:
+        query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
+        query.set_start(num_results)
 
-    querier.send_query(query)
-    page_dict = make_dict_from_bibtex(querier)
+        querier.send_query(query)
+        page_dict = make_dict_from_bibtex(querier)
 
-    # if not page_dict:
-    #     break
+        if not page_dict:
+            break
 
-    output_dict.update(page_dict)
-    num_results += ScholarConf.MAX_PAGE_RESULTS
+        output_dict.update(page_dict)
+        num_results += ScholarConf.MAX_PAGE_RESULTS
     return output_dict
-
 
 def main():
     d = get_citations('benedict paten')
