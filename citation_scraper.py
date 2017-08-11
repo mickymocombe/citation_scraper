@@ -1,3 +1,4 @@
+import argparse
 import sys
 import re
 
@@ -121,11 +122,25 @@ def main():
     expects first argument to be path to text file containing author names
     and second argument to be path to output file location
     """
-    authors_file = sys.argv[1]
-    with open(authors_file, 'r') as fh:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input-file', metavar='FILE',
+                        help='input file which contains author\'s names separated by newline characters')
+    parser.add_argument('output-file',
+                        help='output file which will contain formatted html of citations')
+    parser.add_argument('-c', '--cookie-file', metavar='FILE',
+                        help='cookie file used to avoid getting blocked by API. If shit isn\'t working '
+                             'then open firefox, install extension to download cookie file (make sure it '
+                             'is in netscape format). Make a google scholar advanced search, click '
+                             'cite -> bibtex, fill out captcha. download cookie for this page and '
+                             'specify the cookie file as this argument.')
+    options = parser.parse_args()
+
+    if options.cookie_file:
+        ScholarConf.COOKIE_JAR_FILE = options.cookie_file
+
+    with open(options.input_file, 'r') as fh:
         authors = fh.readlines()
-    output_file = sys.argv[2] if sys.argv[2] else 'citations.txt'
-    with open(output_file, 'w') as fh:
+    with open(options.output_file, 'w') as fh:
         fh.writelines(dict_to_txt_lines(get_citations_authors(authors)))
 
 
