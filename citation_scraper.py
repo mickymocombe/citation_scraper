@@ -117,7 +117,7 @@ def get_citations_authors(authors: List[str]):
 
         ScholarUtils.log('info', 'getting citations for {}...'.format(author))
         new_citations = get_citations(author)
-        ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors'
+        ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors)'
                          .format(len(new_citations)))
         output_dict.update(new_citations)
     return output_dict
@@ -152,7 +152,7 @@ def main():
                              'is in netscape format). Make a google scholar advanced search, click '
                              'cite -> bibtex, fill out captcha. download cookie for this page and '
                              'specify the cookie file as this argument.')
-    parser.add_argument('-d', '--debug', action='count', default=0,
+    parser.add_argument('-d', '--debug', action='count', default=3,
                         help='Enable verbose logging to stderr. Repeated options increase detail of debug '
                              'output.')
     options = parser.parse_args()
