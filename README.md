@@ -2,9 +2,9 @@
 Intro
 =====
 
-This is the software used to scrape Google Scholar for citations by a
-particular author. It makes use of scolar.py which makes use of
-ckreibich's [scholar.py][1], with a couple [modifications][2].
+This is software used to scrape Google Scholar for citations by a
+particular author. It makes use of ckreibich's [scholar.py][1], with
+a couple of [modifications][2].
 
 How to use
 ==========
@@ -13,7 +13,7 @@ Setup
 -----
 
 1. You will need Python3 installed on you computer. Ideally then you
-   will want to start a [virtual environment][3] (*Note:* if you have
+   will want [virtual environment][3] installed (*Note:* if you have
    to install virtualenv make sure you use pip3 instead of pip).
 
 2. Next, you will need to clone this repo and/or download the zip.
@@ -25,7 +25,7 @@ Setup
    ```
 4. Install dependency
    ```bash
-   c$ pip3 install beautifulsoup4
+   $ pip3 install beautifulsoup4
    ```
 
 Running
@@ -33,7 +33,7 @@ Running
 
 Your first line of defence is the help menu. Run
 ```bash
-python3 citation_scraper.py --help
+$ python3 citation_scraper.py --help
 ```
 for details.
 
@@ -67,7 +67,8 @@ You need:
 
 Then:
 
-3. Navigate to one of the URLs that failed when requested
+3. Navigate to one of the URLs that failed when requested (using
+   Firefox)
 
 4. Fill out the captcha
 
