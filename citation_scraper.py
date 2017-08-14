@@ -1,8 +1,12 @@
 import argparse
+import pickle
 import sys
 import re
 
-from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citation_export, ScholarConf
+import time
+from random import random
+
+from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citation_export, ScholarConf, ScholarUtils
 from typing import List, Dict
 
 """
@@ -19,6 +23,8 @@ from typing import List, Dict
 """
 
 Citations = Dict[str, Dict]
+
+PIK = "./.pickle_cache.dat"
 
 
 def bibtex_to_dict_key(bibtex: str):
@@ -78,17 +84,21 @@ def get_citations(author: str):
 
     query = SearchScholarQuery()
     query.set_author('"' + author + '"')
+    query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
 
     output_dict = {}
     num_results = 0
     while True:
-        query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
         query.set_start(num_results)
 
         querier.send_query(query)
         page_dict = make_dict_from_bibtex(querier)
 
-        if not page_dict:
+        # save the data read into a pickle file. will contain dicts of articles
+        with open(PIK, "wb") as fh:
+            pickle.dump(page_dict, fh)
+
+        if not page_dict or len(querier.articles) < ScholarConf.MAX_PAGE_RESULTS:
             break
 
         output_dict.update(page_dict)
@@ -98,9 +108,18 @@ def get_citations(author: str):
 
 def get_citations_authors(authors: List[str]):
     output_dict = {}
+    first = True
     for author in authors:
-        output_dict.update(get_citations(author))
-        # TODO: possibly wait here so as not to get blocked by API
+        # wait, hopefully to prevent getting blocked by the API
+        if not first:
+            wait_time = random(10, 60)
+            time.sleep(wait_time)
+
+        ScholarUtils.log('info', 'getting citations for {}...'.format(author))
+        new_citations = get_citations(author)
+        ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors'
+                         .format(len(new_citations)))
+        output_dict.update(new_citations)
     return output_dict
 
 
@@ -112,7 +131,7 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
     output = []
     for citation in cit_dict.values():
         cit_html = ('{author}; <strong>{title}</strong>. <i>{journal}</i>. <strong>{volume}-{number}'
-                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n'.format(**citation))
+                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'.format(**citation))
         output.append(cit_html)
     return output
 
@@ -133,10 +152,18 @@ def main():
                              'is in netscape format). Make a google scholar advanced search, click '
                              'cite -> bibtex, fill out captcha. download cookie for this page and '
                              'specify the cookie file as this argument.')
+    parser.add_argument('-d', '--debug', action='count', default=0,
+                        help='Enable verbose logging to stderr. Repeated options increase detail of debug '
+                             'output.')
     options = parser.parse_args()
 
     if options.cookie_file:
         ScholarConf.COOKIE_JAR_FILE = options.cookie_file
+
+    if options.debug > 0:
+        options.debug = min(options.debug, ScholarUtils.LOG_LEVELS['debug'])
+        ScholarConf.LOG_LEVEL = options.debug
+        ScholarUtils.log('info', 'using log level %d' % ScholarConf.LOG_LEVEL)
 
     with open(options.input_file, 'r') as fh:
         authors = fh.read().splitlines()
