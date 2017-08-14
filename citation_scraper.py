@@ -106,13 +106,12 @@ def get_citations(author: str):
     return output_dict
 
 
-def get_citations_authors(authors: List[str]):
+def get_citations_authors(authors: List[str], wait_time):
     output_dict = {}
     first = True
     for author in authors:
         # wait, hopefully to prevent getting blocked by the API
-        if not first:
-            wait_time = random(10, 60)
+        if not first and wait_time:
             time.sleep(wait_time)
 
         ScholarUtils.log('info', 'getting citations for {}...'.format(author))
@@ -152,6 +151,8 @@ def main():
                              'is in netscape format). Make a google scholar advanced search, click '
                              'cite -> bibtex, fill out captcha. download cookie for this page and '
                              'specify the cookie file as this argument.')
+    parser.add_argument('-w', '--wait',
+                        help='specify how long to wait between each API request. Default is not to wait.')
     parser.add_argument('-d', '--debug', action='count', default=3,
                         help='Enable verbose logging to stderr. Repeated options increase detail of debug '
                              'output.')
@@ -168,7 +169,7 @@ def main():
     with open(options.input_file, 'r') as fh:
         authors = fh.read().splitlines()
     with open(options.output_file, 'w') as fh:
-        fh.writelines(dict_to_txt_lines(get_citations_authors(authors)))
+        fh.writelines(dict_to_txt_lines(get_citations_authors(authors, options.wait)))
 
 
 if __name__ == '__main__':
