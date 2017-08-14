@@ -123,11 +123,11 @@ def main():
     and second argument to be path to output file location
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('input-file', metavar='FILE',
+    parser.add_argument('input_file', metavar='input-file',
                         help='input file which contains author\'s names separated by newline characters')
-    parser.add_argument('output-file',
+    parser.add_argument('output_file', metavar='output-file',
                         help='output file which will contain formatted html of citations')
-    parser.add_argument('-c', '--cookie-file', metavar='FILE',
+    parser.add_argument('-c', '--cookie-file', metavar='cookie-file',
                         help='cookie file used to avoid getting blocked by API. If shit isn\'t working '
                              'then open firefox, install extension to download cookie file (make sure it '
                              'is in netscape format). Make a google scholar advanced search, click '
@@ -139,7 +139,7 @@ def main():
         ScholarConf.COOKIE_JAR_FILE = options.cookie_file
 
     with open(options.input_file, 'r') as fh:
-        authors = fh.readlines()
+        authors = fh.read().splitlines()
     with open(options.output_file, 'w') as fh:
         fh.writelines(dict_to_txt_lines(get_citations_authors(authors)))
 
