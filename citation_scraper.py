@@ -15,8 +15,8 @@ import re
 
 import time
 
-from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, ScholarConf, ScholarUtils
-from typing import List, Dict
+from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, ScholarConf, ScholarUtils, ScholarArticle
+from typing import List, Dict, Optional
 
 Citations = Dict[str, Dict]
 
@@ -51,6 +51,20 @@ def bibtex_to_dict_key(bibtex: str):
     return bib_id, match_dict
 
 
+def url_from_article(article: ScholarArticle) -> Optional[str]:
+    """
+    Tries a few different possible urls. If all fail, then url is None
+    """
+    url = article.attrs['url'][0]
+    if url:
+        # sometimes url comes back with prefix that makes it invalid
+        prefix = 'http://scholar.google.com/'
+        url = url[len(prefix):] if url.startswith(prefix) else url
+    else:
+        url = article.attrs['url_citations'][0]
+    return url
+
+
 def make_dict_from_bibtex(querier: ScholarQuerier) -> Citations:
     """
     turns all articles from query into a dictionary
@@ -63,6 +77,7 @@ def make_dict_from_bibtex(querier: ScholarQuerier) -> Citations:
             bib_id, bib_dict = bibtex_to_dict_key(article.as_citation().decode('utf-8'))
         except ValueError:
             continue
+        bib_dict['url'] = url_from_article(article)
         out_dict[bib_id] = bib_dict
     return out_dict
 
@@ -126,8 +141,9 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
     """
     output = []
     for key in sorted(cit_dict, key=lambda k: cit_dict[k]['year'], reverse=True):
-        cit_html = ('{author}; <strong>{title}</strong>. <i>{journal}</i>. <strong>{volume}-{number}'
-                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'.format(**cit_dict[key]))
+        cit_html = ('{author}; <strong><a href="{url}">{title}</a></strong>. <i>{journal}</i>. '
+                    '<strong>{volume}-{number}</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'
+                    .format(**cit_dict[key]))
         output.append(cit_html)
     return output
 
