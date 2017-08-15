@@ -98,6 +98,7 @@ def get_citations(author: str):
     query.set_author('"' + author + '"')
     query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
 
+    # iterate through pages of queries
     output_dict = {}
     num_results = 0
     while True:
@@ -141,9 +142,26 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
     """
     output = []
     for key in sorted(cit_dict, key=lambda k: cit_dict[k]['year'], reverse=True):
-        cit_html = ('{author}; <strong><a href="{url}">{title}</a></strong>. <i>{journal}</i>. '
-                    '<strong>{volume}-{number}</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'
-                    .format(**cit_dict[key]))
+        curr = cit_dict[key]
+        cit_html = ''
+        split_string = ['{author}; ',
+                        '<strong><a href="{url}">{title}</a></strong>. ' if curr['url']
+                        else '<strong>{title}</strong>. ',
+                        '<i>{journal}</i>. ',
+                        '<strong>',
+                        '{volume}',
+                        '-{number}',
+                        '</strong>. ' if curr['volume'] or curr['number'] else '</strong> ',
+                        '{pages} ',
+                        '({year}) ',
+                        '<i>{publisher}</i>',
+                        '\n\n']
+        # we want to filter out fields if they are empty
+        for s in split_string:
+            s = s.format(**curr)
+            if 'None' not in s:
+                cit_html += s
+
         output.append(cit_html)
     return output
 
