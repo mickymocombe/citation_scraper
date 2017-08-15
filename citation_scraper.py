@@ -1,3 +1,13 @@
+# This program scrapes citations for specified authors and outputs all of the citations in
+# HTML.
+#
+# outstanding issues/possible improvements:
+#   - The pickled cache isn't used at all other than to save stuff.
+#   - Maybe we could try and find links for the articles and embed that in the html output
+#
+# Author: Jesse Brennan
+
+
 import argparse
 import pickle
 import sys
