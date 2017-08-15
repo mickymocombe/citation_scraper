@@ -44,7 +44,9 @@ def bibtex_to_dict_key(bibtex: str):
     match = re.search(rex, bibtex)
     if match is None:
         raise ValueError
-    match_dict = match.groupdict()
+    # give year default value to avoid error when sorting
+    match_dict = {'year': ''}
+    match_dict.update(match.groupdict())
     bib_id = match_dict.pop('id')
     return bib_id, match_dict
 
@@ -55,7 +57,6 @@ def make_dict_from_bibtex(querier: ScholarQuerier) -> Citations:
     :param querier: the querier object
     :return: dict where keys are article ids, and val is dict of title, author, etc
     """
-
     out_dict = {}
     for article in querier.articles:
         try:
@@ -124,9 +125,9 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
     :return: an html formatted string with all of the citations from input
     """
     output = []
-    for citation in cit_dict.values():
+    for key in sorted(cit_dict, key=lambda k: cit_dict[k]['year'], reverse=True):
         cit_html = ('{author}; <strong>{title}</strong>. <i>{journal}</i>. <strong>{volume}-{number}'
-                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'.format(**citation))
+                    '</strong>. {pages} ({year}) <i>{publisher}</i>\n\n'.format(**cit_dict[key]))
         output.append(cit_html)
     return output
 
