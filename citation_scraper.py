@@ -4,23 +4,9 @@ import sys
 import re
 
 import time
-from random import random
 
-from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, citation_export, ScholarConf, ScholarUtils
+from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, ScholarConf, ScholarUtils
 from typing import List, Dict
-
-"""
-@article{jacobs2014evolutionary,
-  title={An evolutionary arms race between KRAB zinc finger genes 91/93 and SVA/L1 retrotransposons},
-  author={Jacobs, Frank MJ and Greenberg, David and Nguyen, Ngan and Haeussler, Maximilian and Ewing, Adam D and Katzman, Sol and Paten, Benedict and Salama, Sofie R and Haussler, David},
-  journal={Nature},
-  volume={516},
-  number={7530},
-  pages={242},
-  year={2014},
-  publisher={NIH Public Access}
-}
-"""
 
 Citations = Dict[str, Dict]
 
