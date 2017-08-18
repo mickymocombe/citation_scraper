@@ -44,10 +44,10 @@ def bibtex_to_dict_key(bibtex: str):
     match = re.search(rex, bibtex)
     if match is None:
         raise ValueError
-    # give year default value to avoid error when sorting
-    match_dict = {'year': ''}
+    match_dict = {}
     match_dict.update(match.groupdict())
     bib_id = match_dict.pop('id')
+    match_dict['sort_year'] = match_dict['year'] or '0'
     return bib_id, match_dict
 
 
@@ -141,7 +141,7 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
     :return: an html formatted string with all of the citations from input
     """
     output = []
-    for key in sorted(cit_dict, key=lambda k: cit_dict[k]['year'], reverse=True):
+    for key in sorted(cit_dict, key=lambda k: cit_dict[k]['sort_year'], reverse=True):
         curr = cit_dict[key]
         cit_html = ''
         split_string = ['{author}; ',
