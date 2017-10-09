@@ -154,7 +154,7 @@ def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
                         '</strong>. ' if curr['volume'] or curr['number'] else '</strong> ',
                         '{pages} ',
                         '({year}) ',
-                        '<i>{publisher}</i>',
+                        '{publisher}',
                         '\n\n']
         # we want to filter out fields if they are empty
         for s in split_string:
