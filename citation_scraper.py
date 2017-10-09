@@ -84,7 +84,7 @@ def make_dict_from_bibtex(querier: ScholarQuerier) -> Citations:
     return out_dict
 
 
-def get_citations(author: str):
+def get_citations(author: str, options):
     """
     gets all citations for author
     :param author: author's full name (e.g. 'benedict paten')
@@ -98,6 +98,8 @@ def get_citations(author: str):
 
     query = SearchScholarQuery()
     query.set_author('"' + author + '"')
+    if options.uc:
+        query.set_words("UC Santa Cruz Genomics Institute")
     query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
 
     # iterate through pages of queries
@@ -152,20 +154,20 @@ def save_progress(completed_authors: Set[str], output_dict: Citations):
     ScholarUtils.log('info', 'Google blocked us, progress saved to {}'.format(PIK))
 
 
-def get_citations_authors(authors: List[str], wait_time):
+def get_citations_authors(authors: List[str], options):
     completed_authors, output_dict = load_progress()
     try:
         # iterate through authors and get citations
         first = True
         for author in [x for x in authors if x not in completed_authors]:
             # wait, hopefully to prevent getting blocked by the API
-            if not first and wait_time:
-                time.sleep(wait_time)
+            if not first and options.wait:
+                time.sleep(options.wait)
             else:
                 first = False
 
             ScholarUtils.log('info', 'getting citations for {}...'.format(author))
-            new_citations = get_citations(author)
+            new_citations = get_citations(author, options)
             ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors)'
                              .format(len(new_citations)))
             output_dict.update(new_citations)
@@ -232,11 +234,14 @@ def main():
                              'is in netscape format). Make a google scholar advanced search, click '
                              'cite -> bibtex, fill out captcha. download cookie for this page and '
                              'specify the cookie file as this argument.')
-    parser.add_argument('-w', '--wait',
+    parser.add_argument('-w', '--wait', metavar='SECONDS',
                         help='specify how long to wait between each API request. Default is not to wait.')
     parser.add_argument('-d', '--debug', action='count', default=3,
                         help='Enable verbose logging to stderr. Repeated options increase detail of debug '
                              'output.')
+    parser.add_argument('--uc', action='store_true',
+                        help='If set, then "UC Santa Cruz Genomics Institute" will be included in the '
+                             'search for each author.')
     options = parser.parse_args()
 
     if options.cookie_file:
@@ -250,7 +255,7 @@ def main():
     with open(options.input_file, 'r') as fh:
         authors = fh.read().splitlines()
     with open(options.output_file, 'w') as fh:
-        fh.writelines(dict_to_txt_lines(get_citations_authors(authors, options.wait)))
+        fh.writelines(dict_to_txt_lines(get_citations_authors(authors, options)))
 
 
 if __name__ == '__main__':
