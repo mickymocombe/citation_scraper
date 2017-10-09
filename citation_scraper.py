@@ -11,12 +11,14 @@
 import argparse
 import pickle
 import sys
+from urllib.error import HTTPError
+
 import re
 
 import time
 
 from scholar import ScholarQuerier, ScholarSettings, SearchScholarQuery, ScholarConf, ScholarUtils, ScholarArticle
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple, Set
 
 Citations = Dict[str, Dict]
 
@@ -107,10 +109,6 @@ def get_citations(author: str):
         querier.send_query(query)
         page_dict = make_dict_from_bibtex(querier)
 
-        # save the data read into a pickle file. will contain dicts of articles
-        with open(PIK, "wb") as fh:
-            pickle.dump(page_dict, fh)
-
         if not page_dict or len(querier.articles) < ScholarConf.MAX_PAGE_RESULTS:
             break
 
@@ -119,20 +117,72 @@ def get_citations(author: str):
     return output_dict
 
 
-def get_citations_authors(authors: List[str], wait_time):
-    output_dict = {}
-    first = True
-    for author in authors:
-        # wait, hopefully to prevent getting blocked by the API
-        if not first and wait_time:
-            time.sleep(wait_time)
+def load_progress() -> Tuple[Set[str], Citations]:
+    """
+    Uses the cache file PIK to try and load any progress from a previous run of
+    the program that may have failed
 
-        ScholarUtils.log('info', 'getting citations for {}...'.format(author))
-        new_citations = get_citations(author)
-        ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors)'
-                         .format(len(new_citations)))
-        output_dict.update(new_citations)
-    return output_dict
+    :return: tuple of set of completed authors and
+    """
+    try:
+        # find out which authors have been completed already (load set from file)
+        with open(PIK, 'rb') as fd:
+            # assume that first thing pickled was set of authors
+            completed_authors = pickle.load(fd)
+            # initialize output_dict with already completed author dicts
+            output_dict = pickle.load(fd)
+            ScholarUtils.log('info', 'Successfully loaded {} authors from cache file'
+                             .format(len(completed_authors)))
+    except FileNotFoundError:
+        # nothing to load... start from scratch
+        ScholarUtils.log('info', 'No cache file found. Expected file called {}'.format(PIK))
+        completed_authors = set()
+        output_dict = {}
+    return completed_authors, output_dict
+
+
+def save_progress(completed_authors: Set[str], output_dict: Citations):
+    """
+    over writes any current PIK cache file with any new authors and their citations
+    """
+    with open(PIK, 'wb') as fd:
+        pickle.dump(completed_authors, fd)
+        pickle.dump(output_dict, fd)
+    # exit with warning explaining what happened
+    ScholarUtils.log('info', 'Google blocked us, progress saved to {}'.format(PIK))
+
+
+def get_citations_authors(authors: List[str], wait_time):
+    completed_authors, output_dict = load_progress()
+    try:
+        # iterate through authors and get citations
+        first = True
+        for author in [x for x in authors if x not in completed_authors]:
+            # wait, hopefully to prevent getting blocked by the API
+            if not first and wait_time:
+                time.sleep(wait_time)
+            else:
+                first = False
+
+            ScholarUtils.log('info', 'getting citations for {}...'.format(author))
+            new_citations = get_citations(author)
+            ScholarUtils.log('info', '... {} citations found (some may be duplicates from other authors)'
+                             .format(len(new_citations)))
+            output_dict.update(new_citations)
+            # add a completed author to the set of completed authors
+            completed_authors.add(author)
+        return output_dict
+
+    except HTTPError as err:
+        assert err.code == 503
+        save_progress(completed_authors, output_dict)
+        print('Google API blocked us. Progress was saved. To get around this use the '
+              '--cookie-file option. More info with --help.')
+        exit(1)
+    except KeyboardInterrupt:
+        save_progress(completed_authors, output_dict)
+        print('User forced quit. Progress was saved.')
+        exit(1)
 
 
 def dict_to_txt_lines(cit_dict: Citations) -> List[str]:

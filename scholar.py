@@ -173,10 +173,11 @@ try:
     # pylint: disable-msg=E0611
     from urllib.request import HTTPCookieProcessor, Request, build_opener
     from urllib.parse import quote, unquote
+    from urllib.error import HTTPError
     from http.cookiejar import MozillaCookieJar
 except ImportError:
     # Fallback for Python 2
-    from urllib2 import Request, build_opener, HTTPCookieProcessor
+    from urllib2 import Request, build_opener, HTTPCookieProcessor, HTTPError
     from urllib import quote, unquote
     from cookielib import MozillaCookieJar
 
@@ -1112,7 +1113,9 @@ class ScholarQuerier(object):
             ScholarUtils.log('debug', '<<<<' + '-'*68)
 
             return html
-        except Exception as err:
+        except HTTPError as err:
+            if err.code == 503:
+                raise
             ScholarUtils.log('info', err_msg + ': %s' % err)
             return None
 
