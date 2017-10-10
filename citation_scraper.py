@@ -133,8 +133,9 @@ def load_progress() -> Tuple[Set[str], Citations]:
             completed_authors = pickle.load(fd)
             # initialize output_dict with already completed author dicts
             output_dict = pickle.load(fd)
-            ScholarUtils.log('info', 'Successfully loaded {} authors from cache file'
-                             .format(len(completed_authors)))
+            ScholarUtils.log('info', 'Successfully loaded {} author{} from cache file'
+                             .format(len(completed_authors),
+                                     '' if len(completed_authors) == 1 else 's'))
     except FileNotFoundError:
         # nothing to load... start from scratch
         ScholarUtils.log('info', 'No cache file found. Expected file called {}'.format(PIK))
