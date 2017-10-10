@@ -88,6 +88,7 @@ def get_citations(author: str, options):
     """
     gets all citations for author
     :param author: author's full name (e.g. 'benedict paten')
+    :param options: Namespace from argparse
     :return: the dict format described in :func:`make_dict_from_bibtex`
     """
     settings = ScholarSettings()
