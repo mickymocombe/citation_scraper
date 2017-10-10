@@ -52,6 +52,39 @@ example file from above we could run the program as
 $ python3 citation_scraper zeppelin.txt output.txt
 ```
 
+Features
+========
+
+Caching
+-------
+
+Google blocking the program mid-run used to be a show stopper. All
+of the citations already scraped would be lost and the program would
+crash. Until... **CACHING!**
+
+Every time all of the citations for a particular author are scraped
+they are added to a cache file called `.pickle_cache.dat` which is 
+created in the directory where the program is run. If the program
+crashes due to a KeyboardInterrupt (^C) or from a 503 from Google's
+servers, the progress so far is saved to this file so that on the next
+run the scraping can resume from where it left off.
+
+Refined Search
+--------------
+
+Sometimes you want to limit your search only to authors that are part
+of a particular institute or university. By using the `--words` option
+one can specify that so that it's reflected in the results. For example
+`--words "UC Santa Cruz Genomics Institute"` will give only results
+from authors within that institute.
+
+Waiting
+-------
+
+the `--wait` option can be used to wait for a specified number of
+seconds between each query with the hopes that this won't upset Google.
+The effectiveness of this solution has not been verified.
+
 Trouble shooting
 ================
 
