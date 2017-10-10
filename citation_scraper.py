@@ -98,8 +98,8 @@ def get_citations(author: str, options):
 
     query = SearchScholarQuery()
     query.set_author('"' + author + '"')
-    if options.uc:
-        query.set_words("UC Santa Cruz Genomics Institute")
+    if options.words:
+        query.set_words(options.words)
     query.set_num_page_results(ScholarConf.MAX_PAGE_RESULTS)
 
     # iterate through pages of queries
@@ -240,9 +240,9 @@ def main():
     parser.add_argument('-d', '--debug', action='count', default=3,
                         help='Enable verbose logging to stderr. Repeated options increase detail of debug '
                              'output.')
-    parser.add_argument('--uc', action='store_true',
-                        help='If set, then "UC Santa Cruz Genomics Institute" will be included in the '
-                             'search for each author.')
+    parser.add_argument('--words', metavar='"extra search criteria"',
+                        help='words are included in the search for each author which can help refine a '
+                             'search to a particular university or institution.')
     options = parser.parse_args()
 
     if options.cookie_file:
