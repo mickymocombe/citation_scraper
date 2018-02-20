@@ -187,6 +187,7 @@ def get_citations_authors(authors: List[str], options):
         save_progress(completed_authors, output_dict)
         print('User forced quit. Progress was saved.')
         exit(1)
+    save_progress(completed_authors, output_dict)
 
 
 def dict_to_txt_lines(cit_dict: Citations) -> List[str]:
